@@ -1,4 +1,5 @@
 import {
+  Alert,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -28,6 +29,10 @@ const FavoriteItems = ({ navigation }) => {
       (flower) => flower.id !== id
     );
     setFlowerListFavorite(filteredData);
+  };
+
+  deleteAllItem = () => {
+    setFlowerListFavorite([]);
   };
 
   const getFlowerListAsync = async () => {
@@ -92,6 +97,22 @@ const FavoriteItems = ({ navigation }) => {
   //     } catch (e) {}
   //   })();
   // }, []);
+
+  const removeAllStorage = async () => {
+    Alert.alert("Are you sure?", "You are removing all your favorite", [
+      {
+        text: "No",
+        onPress: () => {},
+        style: "destructive",
+      },
+      {
+        text: "Yes",
+        onPress: () => {
+          deleteAllItem();
+        },
+      },
+    ]);
+  };
 
   const Card = ({ flower }) => {
     const [like, setLike] = React.useState(flower.like);
@@ -200,20 +221,49 @@ const FavoriteItems = ({ navigation }) => {
           <MaterialIcons name="sort" size={30} color="white" />
         </View>
       </View>
-      <FlatList
-        columnWrapperStyle={{ justifyContent: "space-between" }}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          marginTop: 10,
-          paddingBottom: 50,
-          paddingHorizontal: 20,
-        }}
-        numColumns={2}
-        data={flowerListFavorite}
-        renderItem={({ item }) => {
-          return <Card flower={item} />;
-        }}
-      ></FlatList>
+      {flowerListFavorite.length !== 0 ? (
+        <>
+          <TouchableOpacity
+            style={{ marginLeft: 30 }}
+            onPress={()=>{
+              removeAllStorage();
+              setFlowersToAsyncStorage(flowers);
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 18,
+                color: "rgba(0, 0, 0, 0.5)",
+                marginBottom: 10,
+              }}
+            >
+              Clear all
+            </Text>
+          </TouchableOpacity>
+          <FlatList
+            columnWrapperStyle={{ justifyContent: "space-between" }}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              marginTop: 10,
+              paddingBottom: 50,
+              paddingHorizontal: 20,
+            }}
+            numColumns={2}
+            data={flowerListFavorite}
+            renderItem={({ item }) => {
+              return <Card flower={item} />;
+            }}
+          ></FlatList>
+        </>
+      ) : (
+        <View style={styles.emptyContainer}>
+          <Image
+            style={styles.emptyImage}
+            source={require("../assets/empty.png")}
+          />
+          <Text style={styles.emptyText}>What is your favorite Orchid?</Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -274,5 +324,19 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 20,
     padding: 15,
+  },
+  emptyContainer: {
+    height: 500,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyImage: {
+    height: "40%",
+    width: "50%",
+  },
+  emptyText: {
+    color: COLORS.green,
+    fontSize: 20,
+    fontFamily: "Chalkboard SE",
   },
 });
