@@ -8,6 +8,7 @@ import {
   Dimensions,
   FlatList,
   Image,
+  Alert,
 } from "react-native";
 import COLORS from "../consts/colors";
 import flowers from "../consts/flowers";
@@ -20,19 +21,41 @@ import { useFocusEffect } from "@react-navigation/native";
 const width = Dimensions.get("window").width / 2 - 30;
 
 const ListItem = ({ navigation }) => {
-  const categories = ["POPULAR", "ORGANIC", "INDOORS", "SYNTHETIC"];
+  const categories = ["POPULAR", "PINK", "WHITE", "PURPLE"];
   const [flowersList, setFlowers] = useState([]);
-  const [catergoryIndex, setCategoryIndex] = useState(0);
+  const [catergory, setCategory] = useState("POPULAR");
+  const [listwcat, setListwcat] = useState([]);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      try {
+        await AsyncStorage.setItem("flowers", JSON.stringify(flowers));
+      } catch (e) {}
+    })();
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {
-      (async () => {
+      // const setFlower = async () => {
+      //   try {
+      //     await AsyncStorage.setItem("flowers", JSON.stringify(flowers));
+      //   } catch (e) {}
+      // };
+      const getFlower = async () => {
         try {
           const flowersAsync = await AsyncStorage.getItem("flowers");
           setFlowers(flowersAsync == null ? flowers : JSON.parse(flowersAsync));
+          setListwcat(
+            flowersAsync == null ? flowers : JSON.parse(flowersAsync)
+          );
           console.log(flowersAsync);
         } catch (e) {}
-      })();
+      };
+      // setFlower();
+      getFlower();
+      setCategory("POPULAR");
+      setSearch("");
       return () => {
         setFlowers([]);
         // Do something when the screen is unfocused
@@ -40,6 +63,29 @@ const ListItem = ({ navigation }) => {
       };
     }, [])
   );
+
+  const getPopular = async () => {
+    try {
+      const flowersAsync = await AsyncStorage.getItem("flowers");
+      setFlowers(flowersAsync == null ? flowers : JSON.parse(flowersAsync));
+      setListwcat(flowersAsync == null ? flowers : JSON.parse(flowersAsync));
+      console.log(flowersAsync);
+    } catch (e) {}
+  };
+
+  const getCategory = async (catergory) => {
+    try {
+      const flowersAsync = await AsyncStorage.getItem("flowers");
+      console.log(JSON.parse(flowersAsync));
+      let filterList = JSON.parse(flowersAsync).filter((flower) => {
+        console.log("flower cat: " + flower.name);
+        return flower.category == catergory;
+      });
+      setFlowers(filterList == null ? [] : filterList);
+      setListwcat(flowersAsync == null ? flowers : JSON.parse(flowersAsync));
+      console.log("filtered" + filterList);
+    } catch (e) {}
+  };
 
   const setFlowersToAsyncStorage = async (flowers) => {
     try {
@@ -64,18 +110,27 @@ const ListItem = ({ navigation }) => {
           <TouchableOpacity
             key={index}
             activeOpacity={0.5}
-            onPress={() => setCategoryIndex(index)}
+            onPress={() => {
+              setCategory(item);
+              if (item == "POPULAR") {
+                getPopular();
+                setSearch("");
+              } else {
+                getCategory(item);
+                setSearch("");
+              }
+            }}
           >
             <View
               style={[
                 styles.categoryText,
-                catergoryIndex === index && styles.categoryTextSelected,
+                catergory === item && styles.categoryTextSelected,
               ]}
             >
               <Text
                 style={[
                   styles.categoryText,
-                  catergoryIndex === index && styles.categoryTextSelected,
+                  catergory === item && styles.categoryTextSelected,
                 ]}
               >
                 {item}
@@ -110,8 +165,12 @@ const ListItem = ({ navigation }) => {
                 setLike(!like);
                 // console.log(flower);
                 flower.like = !flower.like;
-                let index = flowersList.indexOf(flower);
-                updateFlowerLike(flowersList, index, flower.like);
+                let flower1 = listwcat.find(
+                  (item, index) => item.id === flower.id
+                );
+                let index = listwcat.indexOf(flower1);
+                console.log(index);
+                updateFlowerLike(listwcat, index, flower.like);
               }}
             >
               <Ionicons
@@ -176,8 +235,32 @@ const ListItem = ({ navigation }) => {
         style={{ paddingHorizontal: 20, marginTop: 30, flexDirection: "row" }}
       >
         <View style={styles.searchContainer}>
-          <Ionicons name="search" size={25} style={{ marginLeft: 20 }} />
-          <TextInput placeholder="Search" style={styles.input} />
+          <TouchableOpacity
+            onPress={() => {
+              const a = listwcat.filter((el) => {
+                if (search === "") {
+                  return el;
+                }
+                //return the item which contains the user input
+                else {
+                  return el.name.includes(search);
+                }
+              });
+              setCategory("POPULAR");
+              setFlowers(a);
+              console.log(a);
+            }}
+          >
+            <Ionicons name="search" size={25} style={{ marginLeft: 20 }} />
+          </TouchableOpacity>
+          <TextInput
+            placeholder="Search"
+            style={styles.input}
+            value={search}
+            onChangeText={(search) => {
+              setSearch(search);
+            }}
+          />
         </View>
         <View style={styles.sortBtn}>
           <MaterialIcons name="sort" size={30} color="white" />
