@@ -1,10 +1,38 @@
-import React from "react";
-import { View, SafeAreaView, Image, Text, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import {
+  View,
+  SafeAreaView,
+  Image,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
+import flowers from "../consts/flowers";
 import COLORS from "../consts/colors";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Detail = ({ navigation, route }) => {
-  const flower = route.params;
+  const setFlowersToAsyncStorage = async (flowers) => {
+    try {
+      await AsyncStorage.setItem("flowers", JSON.stringify(flowers));
+    } catch (e) {}
+  };
+
+  const updateFlowerLike = (oldFlowersList, index, liked) => {
+    let newFlowersList = oldFlowersList;
+    // console.log(index);
+    // console.log(liked);
+    // console.log(newFlowersList[index]);
+    newFlowersList[index].like = liked;
+    // setFlowers(newFlowersList);
+    setFlowersToAsyncStorage(newFlowersList);
+  };
+
+  const { flower, flowersList } = route.params;
+  const [like, setLike] = useState(flower.like);
+  console.log(flower);
   return (
     <SafeAreaView
       style={{
@@ -19,6 +47,12 @@ const Detail = ({ navigation, route }) => {
           color="black"
           onPress={() => navigation.goBack()}
         />
+        <Ionicons
+          name="home"
+          size={28}
+          color="black"
+          onPress={() => navigation.navigate("List")}
+        />
       </View>
       <View style={styles.imageContainer}>
         <Image
@@ -29,13 +63,58 @@ const Detail = ({ navigation, route }) => {
       <View style={styles.detailsContainer}>
         <View
           style={{
-            marginLeft: 20,
+            // marginLeft: 20,
+            // marginTop: 20,
             flexDirection: "row",
-            alignItems: "flex-end",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
-          <View style={styles.line} />
-          <Text style={{ fontSize: 18, fontWeight: "bold" }}>Best choice</Text>
+          <View
+            style={{
+              marginLeft: 20,
+              flexDirection: "row",
+              alignItems: "flex-end",
+            }}
+          >
+            <View style={styles.line} />
+            <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+              Best choice
+            </Text>
+          </View>
+          <View
+            style={{
+              width: 30,
+              height: 30,
+              marginRight: 10,
+              borderRadius: 20,
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: like
+                ? "rgba(245, 42, 42,0.2)"
+                : "rgba(0,0,0,0.2) ",
+            }}
+          >
+            <TouchableOpacity
+              onPress={() => {
+                setLike(!like);
+                // console.log(flower);
+                flower.like = !flower.like;
+                let flower1 = flowersList.find(
+                  (item, index) => item.id === flower.id
+                );
+                let index = flowersList.indexOf(flower1);
+                console.log(index);
+                updateFlowerLike(flowersList, index, flower.like);
+              }}
+            >
+              <Ionicons
+                name="heart"
+                size={18}
+                color={like ? COLORS.red : COLORS.black}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
         <View
           style={{
@@ -87,7 +166,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginTop: 20,
     flexDirection: "row",
-    justifyContent: "space-start",
+    justifyContent: "space-between",
   },
   imageContainer: {
     flex: 0.45,

@@ -30,7 +30,15 @@ const ListItem = ({ navigation }) => {
   useEffect(() => {
     (async () => {
       try {
-        await AsyncStorage.setItem("flowers", JSON.stringify(flowers));
+        const flowersAsync = await AsyncStorage.getItem("flowers");
+        // console.log(flowersAsync);
+
+        await AsyncStorage.setItem(
+          "flowers",
+          flowersAsync === null
+            ? JSON.stringify(flowers)
+            : JSON.stringify(flowersAsync)
+        );
       } catch (e) {}
     })();
   }, []);
@@ -45,11 +53,12 @@ const ListItem = ({ navigation }) => {
       const getFlower = async () => {
         try {
           const flowersAsync = await AsyncStorage.getItem("flowers");
+          // console.log(flowersAsync);
           setFlowers(flowersAsync == null ? flowers : JSON.parse(flowersAsync));
           setListwcat(
             flowersAsync == null ? flowers : JSON.parse(flowersAsync)
           );
-          console.log(flowersAsync);
+          // console.log(flowersAsync);
         } catch (e) {}
       };
       // setFlower();
@@ -69,21 +78,21 @@ const ListItem = ({ navigation }) => {
       const flowersAsync = await AsyncStorage.getItem("flowers");
       setFlowers(flowersAsync == null ? flowers : JSON.parse(flowersAsync));
       setListwcat(flowersAsync == null ? flowers : JSON.parse(flowersAsync));
-      console.log(flowersAsync);
+      // console.log(flowersAsync);
     } catch (e) {}
   };
 
   const getCategory = async (catergory) => {
     try {
       const flowersAsync = await AsyncStorage.getItem("flowers");
-      console.log(JSON.parse(flowersAsync));
+      // console.log(JSON.parse(flowersAsync));
       let filterList = JSON.parse(flowersAsync).filter((flower) => {
-        console.log("flower cat: " + flower.name);
+        // console.log("flower cat: " + flower.name);
         return flower.category == catergory;
       });
       setFlowers(filterList == null ? [] : filterList);
       setListwcat(flowersAsync == null ? flowers : JSON.parse(flowersAsync));
-      console.log("filtered" + filterList);
+      // console.log("filtered" + filterList);
     } catch (e) {}
   };
 
@@ -95,9 +104,9 @@ const ListItem = ({ navigation }) => {
 
   const updateFlowerLike = (oldFlowersList, index, liked) => {
     let newFlowersList = oldFlowersList;
-    console.log(index);
-    console.log(liked);
-    console.log(newFlowersList[index]);
+    // console.log(index);
+    // console.log(liked);
+    // console.log(newFlowersList[index]);
     newFlowersList[index].like = liked;
     // setFlowers(newFlowersList);
     setFlowersToAsyncStorage(newFlowersList);
@@ -169,7 +178,7 @@ const ListItem = ({ navigation }) => {
                   (item, index) => item.id === flower.id
                 );
                 let index = listwcat.indexOf(flower1);
-                console.log(index);
+                // console.log(index);
                 updateFlowerLike(listwcat, index, flower.like);
               }}
             >
@@ -189,7 +198,12 @@ const ListItem = ({ navigation }) => {
           }}
         >
           <TouchableOpacity
-            onPress={() => navigation.navigate("Detail", flower)}
+            onPress={() =>
+              navigation.navigate("Detail", {
+                flower: flower,
+                flowersList: flowersList,
+              })
+            }
           >
             <Image
               source={flower.image}
@@ -197,7 +211,14 @@ const ListItem = ({ navigation }) => {
             />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => navigation.navigate("Detail", flower)}>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("Detail", {
+              flower: flower,
+              flowersList: flowersList,
+            })
+          }
+        >
           <Text
             style={{
               alignSelf: "center",
@@ -248,7 +269,7 @@ const ListItem = ({ navigation }) => {
               });
               setCategory("POPULAR");
               setFlowers(a);
-              console.log(a);
+              // console.log(a);
             }}
           >
             <Ionicons name="search" size={25} style={{ marginLeft: 20 }} />

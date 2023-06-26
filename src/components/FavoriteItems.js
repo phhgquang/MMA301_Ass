@@ -52,9 +52,9 @@ const FavoriteItems = ({ navigation }) => {
 
   const updateFlowerLike = (oldFlowersList, index, liked) => {
     let newFlowersList = oldFlowersList;
-    console.log(index);
-    console.log(liked);
-    console.log(newFlowersList[index]);
+    // console.log(index);
+    // console.log(liked);
+    // console.log(newFlowersList[index]);
     newFlowersList[index].like = liked;
     // setFlowers(newFlowersList);
     setFlowersToAsyncStorage(newFlowersList);
@@ -63,17 +63,17 @@ const FavoriteItems = ({ navigation }) => {
   useFocusEffect(
     React.useCallback(() => {
       getFlowerListAsync();
-      console.log("favorite screen");
+      // console.log("favorite screen");
       // Do something when the screen is focused
       const getFavorite = async () => {
         try {
           const flowersAsync = await AsyncStorage.getItem("flowers");
-          console.log(JSON.parse(flowersAsync));
+          // console.log(JSON.parse(flowersAsync));
           let filterList = JSON.parse(flowersAsync).filter((flower) => {
             return flower.like == true;
           });
           setFlowerListFavorite(filterList == null ? [] : filterList);
-          console.log("filtered" + filterList);
+          // console.log("filtered" + filterList);
         } catch (e) {}
       };
       getFavorite();
@@ -138,7 +138,7 @@ const FavoriteItems = ({ navigation }) => {
                   (item, index) => item.id === flower.id
                 );
                 let index = flowersAsync.indexOf(flower1);
-                console.log(index);
+                // console.log(index);
                 flower.like = !flower.like;
                 updateFlowerLike(flowersAsync, index, flower.like);
                 deleteItemById(flower.id);
@@ -168,7 +168,12 @@ const FavoriteItems = ({ navigation }) => {
           }}
         >
           <TouchableOpacity
-            onPress={() => navigation.navigate("Detail", flower)}
+            onPress={() =>
+              navigation.navigate("Detail", {
+                flower: flower,
+                flowersList: flowersAsync,
+              })
+            }
           >
             <Image
               source={flower.image}
@@ -176,7 +181,14 @@ const FavoriteItems = ({ navigation }) => {
             />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => navigation.navigate("Detail", flower)}>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("Detail", {
+              flower: flower,
+              flowersList: flowersAsync,
+            })
+          }
+        >
           <Text
             style={{
               alignSelf: "center",
@@ -225,7 +237,7 @@ const FavoriteItems = ({ navigation }) => {
         <>
           <TouchableOpacity
             style={{ marginLeft: 30 }}
-            onPress={()=>{
+            onPress={() => {
               removeAllStorage();
               setFlowersToAsyncStorage(flowers);
             }}
